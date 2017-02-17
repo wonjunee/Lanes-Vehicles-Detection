@@ -46,8 +46,6 @@ else:
 	        # Append object poitns and corners
 	        objpoints.append(objp)
 	        imgpoints.append(corners)
-	        # Draw and display the corners
-	        cv2.drawChessboardCorners(img, (8,6), corners, ret)
 	# Test undistortion on an image
 	img_name = calibration_images[11]
 	img = cv2.imread(img_name)
