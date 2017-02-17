@@ -7,7 +7,7 @@ import matplotlib.image as mpimg
 
 # Prepare object points
 nx = 9 # Enter the number of inside corners in x
-ny = 5 # Enter the number of inside corners in y
+ny = 6 # Enter the number of inside corners in y
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 objp = np.zeros((nx*ny,3), np.float32)
@@ -41,19 +41,15 @@ for fname in calibration_images:
 fname = calibration_images[2]
 img = cv2.imread(fname)
 img_size = (img.shape[1], img.shape[0])
-
 # Do camera calibration given object points and image points
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
-
 # Undistort the images
 dst = cv2.undistort(img, mtx, dist, None, mtx)
-
-# Save the camera calibration result for later use (we won't worry about rvecs / tvecs)
+# Save the camera calibration result for later use
 dist_pickle = {}
 dist_pickle["mtx"] = mtx
 dist_pickle["dist"] = dist
 pickle.dump( dist_pickle, open( "wide_dist_pickle.p", "wb" ) )
-
 # Visualize undistortion
 f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
 ax1.imshow(img)
