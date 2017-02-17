@@ -19,6 +19,8 @@ if os.path.isfile(pickle_file):
 	    pickle_data = pickle.load(f)
 	    mtx = pickle_data['mtx']
 	    dist = pickle_data['dist']
+	    objpoints = pickle_data["objpoints"]
+		imgpoints = pickle_data["imgpoints"]
 	    del pickle_data  # Free up memory
 # If not found, start calibrating using example images
 else:	    
@@ -56,6 +58,8 @@ else:
 	dist_pickle = {}
 	dist_pickle["mtx"] = mtx
 	dist_pickle["dist"] = dist
+	dist_pickle["objpoints"] = objpoints
+	dist_pickle["imgpoints"] = imgpoints
 	pickle.dump( dist_pickle, open( pickle_file, "wb" ) )
 # Visualize undistortion
 dst = cv2.undistort(img, mtx, dist, None, mtx)
