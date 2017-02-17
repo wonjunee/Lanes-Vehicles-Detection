@@ -16,12 +16,12 @@ img = cv2.imread(img_name)
 if os.path.isfile(pickle_file):
 	print("A pickle file exists")
 	with open(pickle_file, 'rb') as f:
-	    pickle_data = pickle.load(f)
-	    mtx = pickle_data['mtx']
-	    dist = pickle_data['dist']
-	    objpoints = pickle_data["objpoints"]
-		imgpoints = pickle_data["imgpoints"]
-	    del pickle_data  # Free up memory
+		pickle_data = pickle.load(f)
+		mtx = pickle_data['mtx']
+		dist = pickle_data['dist']
+		objpoints = pickle_data['objpoints']
+		imgpoints = pickle_data['imgpoints']
+		del pickle_data  # Free up memory
 # If not found, start calibrating using example images
 else:	    
 	# Prepare object points
@@ -56,11 +56,11 @@ else:
 	ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
 	# Save the camera calibration result for later use
 	dist_pickle = {}
-	dist_pickle["mtx"] = mtx
-	dist_pickle["dist"] = dist
-	dist_pickle["objpoints"] = objpoints
-	dist_pickle["imgpoints"] = imgpoints
-	pickle.dump( dist_pickle, open( pickle_file, "wb" ) )
+	dist_pickle['mtx'] = mtx
+	dist_pickle['dist'] = dist
+	dist_pickle['objpoints'] = objpoints
+	dist_pickle['imgpoints'] = imgpoints
+	pickle.dump( dist_pickle, open( pickle_file, 'wb' ) )
 # Visualize undistortion
 dst = cv2.undistort(img, mtx, dist, None, mtx)
 f, (ax1, ax2) = plt.subplots(1, 2)
