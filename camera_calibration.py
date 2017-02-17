@@ -5,6 +5,7 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from functions import *
 
 # Define names of a pickle file
 pickle_file = "wide_dist_pickle.p"
@@ -17,8 +18,6 @@ if os.path.isfile(pickle_file):
 	print("A pickle file exists")
 	with open(pickle_file, 'rb') as f:
 		pickle_data = pickle.load(f)
-		mtx = pickle_data['mtx']
-		dist = pickle_data['dist']
 		objpoints = pickle_data['objpoints']
 		imgpoints = pickle_data['imgpoints']
 		del pickle_data  # Free up memory
@@ -52,17 +51,13 @@ else:
 	img_name = calibration_images[11]
 	img = cv2.imread(img_name)
 	img_size = (img.shape[1], img.shape[0])
-	# Do camera calibration given object points and image points
-	ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
 	# Save the camera calibration result for later use
 	dist_pickle = {}
-	dist_pickle['mtx'] = mtx
-	dist_pickle['dist'] = dist
 	dist_pickle['objpoints'] = objpoints
 	dist_pickle['imgpoints'] = imgpoints
 	pickle.dump( dist_pickle, open( pickle_file, 'wb' ) )
 # Visualize undistortion
-dst = cv2.undistort(img, mtx, dist, None, mtx)
+dst = cal_undistort(img, objpoints, imgpoints)
 f, (ax1, ax2) = plt.subplots(1, 2)
 ax1.imshow(img)
 ax1.set_title('Original Image', fontsize=15)
