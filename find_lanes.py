@@ -8,6 +8,10 @@ import matplotlib.image as mpimg
 from functions import *
 from Line import *
 
+### Import everything needed to edit/save/watch video clips
+from moviepy.editor import VideoFileClip
+from IPython.display import HTML
+
 # Define names of a pickle file
 pickle_file = "wide_dist_pickle.p"
 # If a pickel file exists, then load the file
@@ -51,3 +55,11 @@ def pipeline(img):
 	result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
 	# Return an image with shaped area
 	return result
+
+# Set up lines for left and right
+# left_lane = Line()
+# right_lane = Line()
+white_output = 'white.mp4'
+clip1 = VideoFileClip("project_video.mp4")
+white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+%time white_clip.write_videofile(white_output, audio=False)
