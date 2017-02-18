@@ -126,16 +126,16 @@ def find_edges(img):
     # Define sobel kernel size
     ksize = 7
     # Apply each of the thresholding functions
-    gradx = abs_sobel_thresh(gray, orient='x', sobel_kernel=ksize, thresh=(20, 100))
+    gradx = abs_sobel_thresh(gray, orient='x', sobel_kernel=ksize, thresh=(10, 255))
     grady = abs_sobel_thresh(gray, orient='y', sobel_kernel=ksize, thresh=(20, 255))
-    mag_binary = mag_thresh(gray, sobel_kernel=ksize, mag_thresh=(20, 255))
-    dir_binary = dir_threshold(gray, sobel_kernel=ksize, thresh=(.25, 1.25))
+    mag_binary = mag_thresh(gray, sobel_kernel=ksize, mag_thresh=(25, 255))
+    dir_binary = dir_threshold(gray, sobel_kernel=ksize, thresh=(.45, 1.25))
     # Combine all the thresholding information
     combined = np.zeros_like(dir_binary)
     combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
     # Threshold color channel
     s_binary = np.zeros_like(combined)
-    s_binary[(s > 170) & (s < 255)] = 1
+    s_binary[(s > 140) & (s < 255)] = 1
     # Stack each channel to view their individual contributions in green and blue respectively
     # This returns a stack of the two binary images, whose components you can see as different colors    
     color_binary = np.zeros_like(combined)
@@ -162,7 +162,6 @@ def find_lanes_windows(binary_warped, draw_boxes=False):
 	# Take a histogram of the bottom half of the image
 	histogram = np.sum(binary_warped[binary_warped.shape[0]/2:,:], axis=0)
 	# Create an output image to draw on and  visualize the result
-	print('binary',binary_warped.shape)
 	out_img = np.uint8(np.dstack((binary_warped, binary_warped, binary_warped))*255)
 	# Find the peak of the left and right halves of the histogram
 	# These will be the starting point for the left and right lines
@@ -283,6 +282,19 @@ def find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=False):
 		cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
 	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 	return result, left_fitx, right_fitx, left_fit, right_fit, ploty
+
+def find_curvature(yvals, fit):
+    # Define y-value where we want radius of curvature
+    # I'll choose the maximum y-value, corresponding to the bottom of the image
+    y_eval = np.max(yvals)
+    # Define conversions in x and y from pixels space to meters
+    ym_per_pix = 30/720 # meters per pixel in y dimension
+    xm_per_pix = 3.7/700 # meteres per pixel in x dimension
+    # Calculate the radius of curvature
+    curverad = ((1 + (2*fit[0]*y_eval + fit[1])**2)**1.5) / np.absolute(2*fit[0])
+    # Return the value
+    return curverad
+
 
 def sanity_check(lane, curverad, fitx, fit):       
     # Sanity check for the lane

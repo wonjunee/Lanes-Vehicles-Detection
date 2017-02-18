@@ -41,21 +41,20 @@ def pipeline(img):
 	# Mask some areas
 	binary_warped[650:, :200] = 0
 	binary_warped[650:, 1050:] = 0
-	# use windows search
-	result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_windows(binary_warped, draw_boxes=True)
+	# If the line is detected from previous frame use polyfit
+	if left_lane.detected:
+		left_fit = left_lane.current_fit
+		right_fit = right_lane.current_fit
+		result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=True)
+	# If not then use windows search
+	else:
+		result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_windows(binary_warped, draw_boxes=True)
 	# Calculate radius of curvatures
-	left_curverad  = find_curvature(ploty, left_fit)
+	left_curverad = find_curvature(ploty, left_fit)
 	right_curverad = find_curvature(ploty, right_fit)
 	# Sanity check for the lanes
 	left_fitx  = sanity_check(left_lane, left_curverad, left_fitx, left_fit)
 	right_fitx = sanity_check(right_lane, right_curverad, right_fitx, right_fit)
-
-	if left_lane.detected and right_lane.detected:
-		pass
-	else:
-		left_fit = left_lane.current_fit
-		right_fit = right_lane.current_fit
-		result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=True)
 	# Create an image to draw the lines on
 	warp_zero  = np.zeros_like(binary_warped).astype(np.uint8)
 	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
@@ -121,3 +120,4 @@ white_output = 'white.mp4'
 clip1 = VideoFileClip(movie)
 white_clip = clip1.fl_image(pipeline) #NOTE: this function expects color images!!
 white_clip.write_videofile(white_output, audio=False)
+white_clip = clip1.fl_image(pipeline) #NOTE: this function expects color images!!

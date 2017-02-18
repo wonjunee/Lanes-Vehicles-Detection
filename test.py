@@ -44,6 +44,8 @@ dst = np.float32(
 
 # Find edges from an image
 binary_warped = find_edges(warped)
+binary_warped[650:, :200] = 0
+binary_warped[650:, 1050:] = 0
 # Draw red lines on images
 img_lines = draw_lines(img, src)
 warped_lines = draw_lines(warped, dst)
