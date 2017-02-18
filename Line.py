@@ -21,5 +21,3 @@ class Line():
         self.allx = None  
         #y values for detected line pixels
         self.ally = None
-        #x values in windows
-        self.windows = np.ones((3,12))*-1
