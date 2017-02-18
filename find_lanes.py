@@ -35,11 +35,12 @@ def pipeline(img):
 	# Find edges from an image
 	binary_warped = find_edges(warped)
 	# If the line is detected from previous frame use polyfit
-	if Line.detected:
+	if left_lane.detected:
 		result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=True)
 	# If not then use windows search
 	else:
 		result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_windows(binary_warped, draw_boxes=True)
+		left_lane.detected = True
 	# Create an image to draw the lines on
 	warp_zero = np.zeros_like(binary_warped).astype(np.uint8)
 	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
@@ -57,8 +58,8 @@ def pipeline(img):
 	return result
 
 # Set up lines for left and right
-# left_lane = Line()
-# right_lane = Line()
+left_lane = Line()
+right_lane = Line()
 white_output = 'white.mp4'
 clip1 = VideoFileClip("project_video.mp4")
 white_clip = clip1.fl_image(pipeline) #NOTE: this function expects color images!!

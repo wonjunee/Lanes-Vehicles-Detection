@@ -1,3 +1,5 @@
+import numpy as np
+
 # Define a class to receive the characteristics of each line detection
 class Line():
     def __init__(self):
