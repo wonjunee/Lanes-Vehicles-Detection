@@ -31,6 +31,8 @@ if os.path.isfile(pickle_file):
 else:
 	print("A pickle file does not exist")
 
+
+
 def pipeline(img):
 	# Perspective transform
 	M, Minv = perspective_transform(img)
@@ -50,13 +52,6 @@ def pipeline(img):
 	left_fitx  = sanity_check(left_lane, left_curverad, left_fitx, left_fit)
 	right_fitx = sanity_check(right_lane, right_curverad, right_fitx, right_fit)
 
-	# if left_lane.detected and right_lane.detected:
-	# 	pass
-	# else:
-	# 	left_fit  = left_lane.current_fit
-	# 	right_fit = right_lane.current_fit
-	# 	result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=True)
-	# Create an image to draw the lines on
 	warp_zero  = np.zeros_like(binary_warped).astype(np.uint8)
 	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
 	# Recast the x and y points into usable format for cv2.fillPoly()
@@ -69,38 +64,29 @@ def pipeline(img):
 	newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0])) 
 	# Combine the result with the original image
 	newwarp = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
-	# Multiple windows for diagnostics
-	combined = np.zeros((720, 1920, 3), dtype=np.uint8)
+	
 	# Convert grayscale into color scales
 	warped_stacked = np.uint8(np.dstack((binary_warped, binary_warped, binary_warped))*255)
     # draw lines on image
 	# Left Lane
-	start = 0
-	pts_left = pts_left.reshape((-1,1,2))
-	for line in pts_left:
-		if start == 0:
-			first_line = line
-			start = 1
-		else:
-			end_line = line
-			cv2.line(warped_stacked, (int(first_line[0][0]),int(first_line[0][1])),
-			         (int(end_line[0][0]),int(end_line[0][1])), [0,255,0], 15)
-			start = 0
-	# Right Lane
-	start = 0
-	pts_right = pts_right.reshape((-1,1,2))
-	for line in pts_right:
-		if start == 0:
-			first_line = line
-			start = 1
-		else:
-			end_line = line
-			cv2.line(warped_stacked, (int(first_line[0][0]),int(first_line[0][1])),
-				(int(end_line[0][0]),int(end_line[0][1])), [0,0,255], 15)
-			start = 0
-	combined[:, 0:1280] = newwarp
-	combined[:360, 1280:] = cv2.resize(result, (640,360))
-	combined[360:, 1280:] = cv2.resize(warped_stacked, (640,360))
+	warped_stacked_with_lines = copy.copy(warped_stacked)
+	# draw polynomial lines on images
+	draw_lines(pts_left, warped_stacked_with_lines)
+	draw_lines(pts_right, warped_stacked_with_lines)
+	# Multiple windows for diagnostics
+	combined = np.zeros((720+360, 1920, 3), dtype=np.uint8)
+	# main window
+	combined[:720, 0:1280] = newwarp
+	# right 1
+	combined[:360, 1280:] = cv2.resize(warped, (640,360))
+	# right 2
+	combined[360:720, 1280:] = cv2.resize(result, (640,360))
+	# bottom 1
+	combined[720:, 0:640] = cv2.resize(warped_stacked, (640,360))
+	# bottom 2
+	combined[720:, 640:1280] = cv2.resize(warped_stacked, (640,360))
+	# bottom 3
+	combined[720:, 1280:] = cv2.resize(warped_stacked_with_lines, (640,360))
 
 	# cv2.putText(combined,"Masked Image",(1500,100), font, 1,(255,255,255),2)
 	# cv2.putText(combined,"Warped Image",(1500,450), font, 1,(255,255,255),2)    
