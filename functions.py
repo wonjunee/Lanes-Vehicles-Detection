@@ -127,8 +127,8 @@ def find_edges(img):
     ksize = 7
     # Apply each of the thresholding functions
     gradx = abs_sobel_thresh(gray, orient='x', sobel_kernel=ksize, thresh=(10, 255))
-    grady = abs_sobel_thresh(gray, orient='y', sobel_kernel=ksize, thresh=(20, 255))
-    mag_binary = mag_thresh(gray, sobel_kernel=ksize, mag_thresh=(25, 255))
+    grady = abs_sobel_thresh(gray, orient='y', sobel_kernel=ksize, thresh=(40, 255))
+    mag_binary = mag_thresh(gray, sobel_kernel=ksize, mag_thresh=(15, 255))
     dir_binary = dir_threshold(gray, sobel_kernel=ksize, thresh=(.45, 1.25))
     # Combine all the thresholding information
     combined = np.zeros_like(dir_binary)
@@ -296,8 +296,10 @@ def find_curvature(yvals, fit):
     return curverad
 
 
-def sanity_check(lane, curverad, fitx, fit):
-	# Weight parameter
+def sanity_check(lane, ploty, fitx, fit):
+    # Calculate curvature
+    curverad = find_curvature(ploty, fit)
+    # Weight parameter
     w = 4
     # Sanity check for the lane
     if lane.detected: # If lane is detected
