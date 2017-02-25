@@ -332,3 +332,18 @@ def sanity_check(lane, curverad, fitx, fit):
             lane.bestx = np.mean(fitx)
             lane.radius_of_curvature = curverad
     return fitx
+
+def draw_lines(pts, image):
+	# load points from polynomial fit function
+	# return an image with lines
+	start = 0
+	pts = pts.reshape((-1,1,2))
+	for line in pts:
+		if start == 0:
+			first_line = line
+			start = 1
+		else:
+			end_line = line
+			cv2.line(image, (int(first_line[0][0]),int(first_line[0][1])),
+				(int(end_line[0][0]),int(end_line[0][1])), [0,0,255], 15)
+			start = 0
