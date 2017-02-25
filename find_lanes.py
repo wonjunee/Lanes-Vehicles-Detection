@@ -45,13 +45,14 @@ def pipeline(img):
 	binary_warped[650:, 1050:] = 0
 	# use windows search
 	result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_windows(binary_warped, draw_boxes=True)
-	# Calculate radius of curvatures
-	left_curverad  = find_curvature(ploty, left_fit)
-	right_curverad = find_curvature(ploty, right_fit)
-	# Sanity check for the lanes
-	left_fitx  = sanity_check(left_lane, left_curverad, left_fitx, left_fit)
-	right_fitx = sanity_check(right_lane, right_curverad, right_fitx, right_fit)
 
+	left_fitx_raw = copy.copy(left_fitx)
+	right_fitx_raw = copy.copy(right_fitx)
+	
+	# Sanity check for the lanes
+	left_fitx  = sanity_check(left_lane, ploty, left_fitx, left_fit)
+	right_fitx = sanity_check(right_lane, ploty, right_fitx, right_fit)
+	# Create an empty numpy array and draw image and shade area between lanes
 	warp_zero  = np.zeros_like(binary_warped).astype(np.uint8)
 	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
 	# Recast the x and y points into usable format for cv2.fillPoly()
@@ -84,7 +85,7 @@ def pipeline(img):
 	# bottom 1
 	combined[720:, 0:640] = cv2.resize(warped_stacked, (640,360))
 	# bottom 2
-	combined[720:, 640:1280] = cv2.resize(warped_stacked, (640,360))
+	combined[720:, 640:1280] = cv2.resize(warped_stacked_no_sanity, (640,360))
 	# bottom 3
 	combined[720:, 1280:] = cv2.resize(warped_stacked_with_lines, (640,360))
 
