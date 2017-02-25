@@ -181,7 +181,7 @@ def find_lanes_windows(binary_warped, draw_boxes=False):
 	leftx_current = leftx_base
 	rightx_current = rightx_base
 	# Set the width of the windows +/- margin
-	margin = 100
+	margin = 60
 	# Set minimum number of pixels found to recenter window
 	minpix = 50
 	# Create empty lists to receive left and right lane pixel indices
@@ -244,7 +244,7 @@ def find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=False):
 	nonzero = binary_warped.nonzero()
 	nonzeroy = np.array(nonzero[0])
 	nonzerox = np.array(nonzero[1])
-	margin = 100
+	margin = 60
 	left_lane_inds = ((nonzerox > (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy + left_fit[2] - margin)) & (nonzerox < (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy + left_fit[2] + margin))) 
 	right_lane_inds = ((nonzerox > (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy + right_fit[2] - margin)) & (nonzerox < (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy + right_fit[2] + margin)))  
 
@@ -296,17 +296,18 @@ def find_curvature(yvals, fit):
     return curverad
 
 
-def sanity_check(lane, curverad, fitx, fit):       
+def sanity_check(lane, curverad, fitx, fit):
+	# Weight parameter
+    w = 4
     # Sanity check for the lane
     if lane.detected: # If lane is detected
         # If sanity check passes
-        if abs(curverad / lane.radius_of_curvature - 1) < .6:        
+        if abs(curverad / lane.radius_of_curvature - 1) < .4:        
             lane.detected = True
-            lane.current_fit = fit
+            lane.current_fit = (lane.current_fit * w + fit) / (w + 1)
             lane.allx = fitx
             lane.bestx = np.mean(fitx)            
             lane.radius_of_curvature = curverad
-            lane.current_fit = fit
         # If sanity check fails use the previous values
         else:
             lane.detected = False
@@ -314,20 +315,19 @@ def sanity_check(lane, curverad, fitx, fit):
     else:
         # If lane was not detected and no curvature is defined
         if lane.radius_of_curvature: 
-            if abs(curverad / lane.radius_of_curvature - 1) < 1:            
+            if abs(curverad / lane.radius_of_curvature - 1) < .6:            
                 lane.detected = True
-                lane.current_fit = fit
+                lane.current_fit = (lane.current_fit * w + fit) / (w + 1)
                 lane.allx = fitx
                 lane.bestx = np.mean(fitx)            
                 lane.radius_of_curvature = curverad
-                lane.current_fit = fit
             else:
                 lane.detected = False
                 fitx = lane.allx      
         # If curvature was defined
         else:
             lane.detected = True
-            lane.current_fit = fit
+            lane.current_fit = (lane.current_fit * w + fit) / (w + 1)
             lane.allx = fitx
             lane.bestx = np.mean(fitx)
             lane.radius_of_curvature = curverad

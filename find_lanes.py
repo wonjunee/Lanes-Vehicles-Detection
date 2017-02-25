@@ -50,12 +50,12 @@ def pipeline(img):
 	left_fitx  = sanity_check(left_lane, left_curverad, left_fitx, left_fit)
 	right_fitx = sanity_check(right_lane, right_curverad, right_fitx, right_fit)
 
-	if left_lane.detected and right_lane.detected:
-		pass
-	else:
-		left_fit = left_lane.current_fit
-		right_fit = right_lane.current_fit
-		result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=True)
+	# if left_lane.detected and right_lane.detected:
+	# 	pass
+	# else:
+	# 	left_fit  = left_lane.current_fit
+	# 	right_fit = right_lane.current_fit
+	# 	result, left_fitx, right_fitx, left_fit, right_fit, ploty = find_lanes_polyfit(binary_warped, left_fit, right_fit, draw_boxes=True)
 	# Create an image to draw the lines on
 	warp_zero  = np.zeros_like(binary_warped).astype(np.uint8)
 	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
