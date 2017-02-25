@@ -34,12 +34,18 @@ else:
 
 
 def pipeline(img):
+	img_edge = find_edges(img)
+	img_edge_stacked = np.uint8(np.dstack((img_edge,img_edge,img_edge))*255)
 	# Perspective transform
-	M, Minv = perspective_transform(img)
+	M, Minv = perspective_transform(img_edge)
+
 	# Unwarping corners
-	warped = warp_image(img, M, mtx, dist)
+	# warped = warp_image(img, M, mtx, dist)
+	binary_warped = warp_image(img_edge, M, mtx, dist)
+
 	# Find edges from an image
-	binary_warped = find_edges(warped)
+	# binary_warped = find_edges(warped)
+	
 	# Mask some areas
 	binary_warped[650:, :200] = 0
 	binary_warped[650:, 1050:] = 0
@@ -48,7 +54,7 @@ def pipeline(img):
 
 	left_fitx_raw = copy.copy(left_fitx)
 	right_fitx_raw = copy.copy(right_fitx)
-	
+
 	# Sanity check for the lanes
 	left_fitx  = sanity_check(left_lane, ploty, left_fitx, left_fit)
 	right_fitx = sanity_check(right_lane, ploty, right_fitx, right_fit)
@@ -59,6 +65,10 @@ def pipeline(img):
 	pts_left  = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
 	pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
 	pts = np.hstack((pts_left, pts_right))
+
+	pts_left_raw  = np.array([np.transpose(np.vstack([left_fitx_raw, ploty]))])
+	pts_right_raw = np.array([np.flipud(np.transpose(np.vstack([right_fitx_raw, ploty])))])
+
 	# Draw the lane onto the warped blank image
 	cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
@@ -68,18 +78,21 @@ def pipeline(img):
 	
 	# Convert grayscale into color scales
 	warped_stacked = np.uint8(np.dstack((binary_warped, binary_warped, binary_warped))*255)
-    # draw lines on image
-	# Left Lane
-	warped_stacked_with_lines = copy.copy(warped_stacked)
 	# draw polynomial lines on images
-	draw_lines(pts_left, warped_stacked_with_lines)
+	warped_stacked_with_lines = copy.copy(warped_stacked)
+	draw_lines(pts_left, warped_stacked_with_lines) 
 	draw_lines(pts_right, warped_stacked_with_lines)
+
+	warped_stacked_no_sanity = copy.copy(warped_stacked)
+	draw_lines(pts_left_raw, warped_stacked_no_sanity)
+	draw_lines(pts_right_raw, warped_stacked_no_sanity)
+
 	# Multiple windows for diagnostics
 	combined = np.zeros((720+360, 1920, 3), dtype=np.uint8)
 	# main window
 	combined[:720, 0:1280] = newwarp
 	# right 1
-	combined[:360, 1280:] = cv2.resize(warped, (640,360))
+	combined[:360, 1280:] = cv2.resize(img_edge_stacked, (640,360))
 	# right 2
 	combined[360:720, 1280:] = cv2.resize(result, (640,360))
 	# bottom 1
@@ -89,7 +102,7 @@ def pipeline(img):
 	# bottom 3
 	combined[720:, 1280:] = cv2.resize(warped_stacked_with_lines, (640,360))
 
-	# cv2.putText(combined,"Masked Image",(1500,100), font, 1,(255,255,255),2)
+	cv2.putText(combined,"left: {:5f}, right: {:5f}".format(left_fit[0], right_fit[0]),(400,760), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2)
 	# cv2.putText(combined,"Warped Image",(1500,450), font, 1,(255,255,255),2)    
 
 	# Return an image with shaped area
